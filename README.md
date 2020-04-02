@@ -1,6 +1,18 @@
 see3cam
 =======
 
+In addition
+
+- Modify for ROS-Kinetic
+
+- Implement Sample Application for ROS
+    - DepthView
+    - HeightEstimation
+
+- New Launch File
+    - tara_stereo.launch
+
+
 ROS driver for the e-consystems See3CAM_Stereo (Tara) camera based on the 
 [uvc_camera](https://github.com/ktossell/camera_umd/tree/master/uvc_camera) package.
 
