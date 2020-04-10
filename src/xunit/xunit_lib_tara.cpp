@@ -23,6 +23,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <iostream>
 #include <linux/input.h>
 #include <linux/hidraw.h>
 
@@ -107,6 +108,7 @@ void Sleep(unsigned int TimeInMilli)
  Application should call this function before calling any other function		*
  **********************************************************************************************************
  */
+ using namespace std;
 BOOL InitExtensionUnit(char *busname)
 {
 	int index, fd, ret, desc_size = 0;
@@ -115,6 +117,8 @@ BOOL InitExtensionUnit(char *busname)
 	struct hidraw_report_descriptor rpt_desc;
 	countHidDevices = 0;
 	ret = find_hid_device(busname);
+	std::cout << "busname" << busname << endl;
+	std::cout << "ret" << ret << endl;
 	if(ret < 0)
 	{
 		printf("%s(): Not able to find the e-con's see3cam device\n", __func__);
@@ -233,15 +237,19 @@ BOOL ReadFirmwareVersion (UINT8 *pMajorVersion, UINT8 *pMinorVersion1, UINT16 *p
 
 	//Set the Report Number
 	g_out_packet_buf[1] = READFIRMWAREVERSION; 	/* Report Number */
-
+	cout << "1 " << endl;
+	hid_fd = 11;
+	cout << hid_fd << " " << g_out_packet_buf << " " << BUFFER_LENGTH << endl;
 	/* Send a Report to the Device */
 	ret = write(hid_fd, g_out_packet_buf, BUFFER_LENGTH);
 	if (ret < 0) {
+		cout << "2 " << endl;
 		perror("xunit-ReadFirmwareVersion : write failed");
 		return FALSE;
 	} else {
 		//printf("%s(): wrote %d bytes\n", __func__,ret);
 	}
+	cout << "2 " << endl;
 	/* Read the Firmware Version from the device */
 	start = GetTickCount();
 	while(timeout) 
@@ -255,6 +263,8 @@ BOOL ReadFirmwareVersion (UINT8 *pMajorVersion, UINT8 *pMinorVersion1, UINT16 *p
 			if(g_in_packet_buf[0] == READFIRMWAREVERSION) {
 				sdk_ver = (g_in_packet_buf[3]<<8)+g_in_packet_buf[4];
 				svn_ver = (g_in_packet_buf[5]<<8)+g_in_packet_buf[6];
+				cout << "sdk_ver " << sdk_ver << endl;
+				cout << "svn_ver " << svn_ver << endl;
 
 				*pMajorVersion = g_in_packet_buf[1];
 				*pMinorVersion1 = g_in_packet_buf[2];
@@ -267,6 +277,8 @@ BOOL ReadFirmwareVersion (UINT8 *pMajorVersion, UINT8 *pMinorVersion1, UINT16 *p
 		end = GetTickCount();
 		if(end - start > TIMEOUT)
 		{
+			cout << "3 " << endl;
+
 			printf("%s(): Timeout occurred\n", __func__);
 			timeout = FALSE;
 			return FALSE;
@@ -388,6 +400,7 @@ BOOL GetManualExposureValue_Stereo(INT32 *ExposureValue)
 	g_out_packet_buf[2] = GET_EXPOSURE_VALUE; 		/* Report Number */
 
 	/* Send a Report to the Device */
+	hid_fd = 11;
 	ret = write(hid_fd, g_out_packet_buf, BUFFER_LENGTH);
 	if (ret < 0) {
 		perror("xunit-GetManualExposureValue_Stereo : write failed");
@@ -447,15 +460,17 @@ BOOL SetManualExposureValue_Stereo(INT32 ExposureValue)
 	BOOL timeout = TRUE;
 	int ret = 0;
 	unsigned int start, end = 0;
-
+	printf("exposure a\n");
 	if(((ExposureValue > SEE3CAM_STEREO_EXPOSURE_MAX) || (ExposureValue < SEE3CAM_STEREO_EXPOSURE_MIN)) && (ExposureValue != SEE3CAM_STEREO_EXPOSURE_AUTO))
 	{
+		printf("exposure b\n");
 		printf("Set Manual Exposure failed : Input out of bounds\n");
 		return FALSE;
 	}
 
 	//Initialize the buffer
 	memset(g_out_packet_buf, 0x00, sizeof(g_out_packet_buf));
+	printf("exposure c\n");
 
 	//Set the Report Number
 	g_out_packet_buf[1] = CAMERA_CONTROL_STEREO; 	/* Report Number */
@@ -465,10 +480,19 @@ BOOL SetManualExposureValue_Stereo(INT32 ExposureValue)
 	g_out_packet_buf[4] = (UINT8)((ExposureValue >> 16) & 0xFF);
 	g_out_packet_buf[5] = (UINT8)((ExposureValue >> 8) & 0xFF);
 	g_out_packet_buf[6] = (UINT8)(ExposureValue & 0xFF);
-
+	hid_fd = 11;
+	cout << g_out_packet_buf[1] << endl;
+	cout << g_out_packet_buf[2] << endl;
+	cout << g_out_packet_buf[3] << endl;
+	cout << g_out_packet_buf[4] << endl;
+	cout << g_out_packet_buf[5] << endl;
+	cout << g_out_packet_buf[6] << endl;
+	cout << BUFFER_LENGTH << endl;
 	/* Send a Report to the Device */
 	ret = write(hid_fd, g_out_packet_buf, BUFFER_LENGTH);
 	if (ret < 0) {
+		printf("exposure d\n");
+
 		perror("xunit-SetManualExposureValue_Stereo : write failed");
 		return FALSE;
 	} else {
@@ -490,6 +514,8 @@ BOOL SetManualExposureValue_Stereo(INT32 ExposureValue)
 				if(g_in_packet_buf[10] == SET_SUCCESS) {
 					timeout = FALSE;
 				} else if(g_in_packet_buf[10] == SET_FAIL) {
+					printf("exposure e\n");
+					
 					return FALSE;
 				}
 			}
@@ -1461,6 +1487,11 @@ int find_hid_device(char *videobusname)
 		path = udev_list_entry_get_name(dev_list_entry);
 		dev = udev_device_new_from_syspath(udev, path);
 
+		std::cout <<  "PATH " << path << endl;
+		std::cout <<  "dev lisy entry " << dev_list_entry << endl;
+
+		std::cout <<  "udev" << udev << endl;
+
 		/* usb_device_get_devnode() returns the path to the device node itself in /dev. */
 		//printf("Device Node Path: %s\n", udev_device_get_devnode(dev));
 
@@ -1469,9 +1500,12 @@ int find_hid_device(char *videobusname)
 				dev,
 				"usb",
 				"usb_device");
+		std::cout <<  "pdev " << pdev << endl;
+		cout << "xunit_lib_tara.cpp" << endl;
+
 		if (!pdev) {
 			printf("Unable to find parent usb device.");
-			exit(1);
+			continue;
 		}
 
 		/* From here, we can call get_sysattr_value() for each file in the device's /sys entry. The strings passed into these functions (idProduct, idVendor, serial, 			etc.) correspond directly to the files in the /sys directory which represents the USB device. Note that USB strings are Unicode, UCS2 encoded, but the strings    		returned from udev_device_get_sysattr_value() are UTF-8 encoded. */
@@ -1517,6 +1551,7 @@ int find_hid_device(char *videobusname)
 	/* Free the enumerator object */
 	udev_enumerate_unref(enumerate);
 	udev_unref(udev);
+	std::cout <<  "ret" << ret << endl;
 
 	return ret;
 }
