@@ -12,8 +12,10 @@
 #include "std_msgs/Float64.h"
 
 #include "uvc_camera/tara_ros.h"
+#include <iostream>
 
 using namespace sensor_msgs;
+using namespace std;
 
 namespace uvc_camera {
 
@@ -53,6 +55,9 @@ namespace uvc_camera {
 			pnode.getParam("height", height);
 			pnode.getParam("frame_id", frame);
 
+			cout << "device" << " " << device << endl;
+
+			
 			// changing start
 			pnode.getParam ("exposureValue", exposure_value);
 
@@ -73,6 +78,8 @@ namespace uvc_camera {
 			/* initialize the cameras */
 			cam = new uvc_cam::Cam(device.c_str(), uvc_cam::Cam::MODE_Y16, width, height, fps);
 			
+			cout << "tara ros Is Camera Stereo" << " " << cam -> IsStereo << endl;
+
 			if (cam -> IsStereo == true )
 			{
 				isCameraStereo = true;
@@ -119,6 +126,7 @@ namespace uvc_camera {
 				}
 			
 				std_msgs::Float64 exposure_msg;
+				cout << exposure_msg << endl;
 				exposure_msg.data=(float)exposure_value;
 				if ( GetManualExposureValue_Stereo( &exposure_value) == true )
 				{
@@ -126,7 +134,7 @@ namespace uvc_camera {
 				}
 				else
 				{
-					printf ("Error while getting exposure\n");
+					printf ("1 Error while getting exposure\n");
 				}
 				exposure_pub.publish( exposure_msg );
 
@@ -179,7 +187,7 @@ namespace uvc_camera {
 		}
 		else
 		{
-			printf ("Error while getting exposure\n");
+			printf ("tara ros Error while getting exposure\n");
 		}
 
 		exposure_pub.publish( call_exposure_msg );
@@ -447,13 +455,13 @@ namespace uvc_camera {
 		std::string cameraRight_path = getenv("HOME") + cameraRight_name;
 
 		std::ofstream foutLeft(cameraLeft_path.c_str());
-		if (foutLeft.is_open())
+		if (!foutLeft.is_open())
 		{
 			printf ("Left camera matrix not found\n");
 		}
 
 		std::ofstream foutRight(cameraRight_path.c_str());	
-		if (foutRight.is_open())
+		if (!foutRight.is_open())
 		{
 			printf ("Right camera matrix not found\n");
 		}
