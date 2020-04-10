@@ -49,8 +49,11 @@ enumerate_menu (int device_file_h_,
 	//enumerate();
 
 	GetListofDeviceseCon();
+	cout << "_device[10] " << _device[10] << endl;
 
 	index = ( _device[10] ) - 48;
+
+	cout << "index " << index << endl;
 
 //	printf("opening %s\n", _device);
 
@@ -365,6 +368,12 @@ enumerate_menu (int device_file_h_,
 
 	// initialize see3cam extension unit
 	//  InitExtensionUnit( (const char*)capability_.bus_info );
+	cout << "index " << index << endl;
+	cout << "product " << DeviceInstances->listVidDevices[index].product << endl;
+	cout << "product " << DeviceInstances->listVidDevices[index+1].product << endl;
+	cout << "product " << DeviceInstances->listVidDevices[index+2].product << endl;
+	cout << "product " << DeviceInstances->listVidDevices[index+3].product << endl;
+	index = index + 3;
 	if(IsStereoDeviceAvail(DeviceInstances->listVidDevices[index].product))
 	{
 		IsStereo = true;
@@ -386,6 +395,7 @@ enumerate_menu (int device_file_h_,
 
 BOOL Cam::IsStereoDeviceAvail(char *pid)
 {
+	cout << "pid" << " " << pid << " " << See3CAM_STEREO << endl;
 	if(strcmp(pid, See3CAM_STEREO) == 0)
 		return TRUE;
 	else
@@ -809,7 +819,11 @@ int Cam::GetListofDeviceseCon(void)
 		/* Get the filename of the /sys entry for the device
 		   and create a udev_device object (dev) representing it */
 		path = udev_list_entry_get_name(dev_list_entry);
+		std::cout <<  "PATH" << path << endl;
+		std::cout <<  "dev lisy entry" << dev_list_entry << endl;
+
 		dev = udev_device_new_from_syspath(udev, path);
+		std::cout <<  "udev" << udev << endl;
 
 		/* usb_device_get_devnode() returns the path to the device node
 		   itself in /dev. */
@@ -853,10 +867,12 @@ int Cam::GetListofDeviceseCon(void)
 		   subsystem/devtype pair of "usb"/"usb_device". This will
 		   be several levels up the tree, but the function will find
 		   it.*/
+		std::cout <<  "dev" << dev << endl;
 		dev = udev_device_get_parent_with_subsystem_devtype(
 				dev,
 				"usb",
 				"usb_device");
+		cout << "uvc_cam.cpp" << endl;
 		if (!dev)
 		{
 			cout << "Unable to find parent usb device.";
@@ -880,6 +896,9 @@ int Cam::GetListofDeviceseCon(void)
 	udev_enumerate_unref(enumerate);
 
 	DeviceInstances->num_devices = num_dev;
+		std::cout <<  "num_dev" << num_dev << endl;
+	
+
 	return(num_dev);
 }
 
