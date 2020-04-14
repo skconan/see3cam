@@ -3,7 +3,7 @@ see3cam
 
 In addition
 
-- Modify for ROS-Kinetic
+- Modify for ROS-Melodic
 
 - Implement Sample Application for ROS
     - DepthView
